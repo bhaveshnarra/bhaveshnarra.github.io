@@ -323,7 +323,7 @@ function makePopper(ele) {
             instance.popperInstance.reference = ref
         },
     });
-    ele.tippy.setContent('Count ' + ele.data()["count"]);
+    ele.tippy.setContent('Count ' + ele.data()["count"] + ' <br>Right Click to go to Trait');
 }
 
 function getAllTraits(Q) {
