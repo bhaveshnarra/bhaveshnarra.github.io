@@ -159,6 +159,7 @@ function getAllPeople(Q) {
             let cur = 1;
             let level = [];
             // let E = $("#cyto");
+            $("#homebutton").show();
             document.getElementById("cyto").scrollIntoView({
                 behavior: "smooth",
                 block: "end",
@@ -291,6 +292,7 @@ function getAllPeople(Q) {
             cy.nodes().on('cxttap', function(evt) {
                 console.log("Hello");
                 $("#traitList a")[3].click();
+                $("#homebutton").show();
                 document.getElementById("yellow").scrollIntoView({
                     behavior: "smooth",
                     block: "end",
@@ -350,6 +352,7 @@ function getAllTraits(Q) {
                         }
                     });
                 });
+                $("#homebutton").show();
                 document.getElementById("red").scrollIntoView({
                     behavior: "smooth",
                     block: "end",
