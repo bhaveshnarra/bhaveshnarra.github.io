@@ -291,6 +291,7 @@ function getAllPeople(Q) {
             });
             cy.nodes().on('cxttap', function(evt) {
                 console.log("Hello");
+                $("#homebutton").show();
                 $("#traitList a")[3].click();
                 $("#homebutton").show();
                 document.getElementById("yellow").scrollIntoView({
