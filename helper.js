@@ -375,7 +375,8 @@ function getAllTraits(Q) {
                 getPersonFromGraphQL(pleth);
 
             });
-
+            $("#traitList").html("");
+            $("#traitCard").html("");
             traits.forEach(element => {
                 $("#traitList").append("<a class=\"button button--primary mb-2\" style=\"margin: 10px;\"><span>" + element["name"] + " </span></a>");
 
@@ -435,6 +436,8 @@ function getAllTraitswithoutRedirect(Q) {
                 getPersonFromGraphQL(pleth);
 
             });
+            $("#traitList").html("");
+            $("#traitCard").html("");
 
             traits.forEach(element => {
                 $("#traitList").append("<a class=\"button button--primary mb-2\" style=\"margin: 10px;\"><span>" + element["name"] + " </span></a>");
