@@ -1,658 +1,446 @@
-<!DOCTYPE html>
-<html>
+<html xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office">
 
 <head>
-    <style>
-        html {
-            margin: 0;
-            height: 100%;
-            width: 100%;
+    <title></title>
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="viewport" content="width=device-width, minimum-scale=1.0" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+
+    <link type="text/css" rel="stylesheet" href="./css/slider.css" />
+    <link type="text/css" rel="stylesheet" href="./css/style.css" />
+    <link rel="preconnect" href="https://fonts.gstatic.com">
+    <!-- CSS only -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-BmbxuPwQa2lc/FVzBcNJ7UAyJxM6wuqIj61tLrc4wSX0szH/Ev+nYRRuWlolflfl" crossorigin="anonymous">
+    <link href="https://fonts.googleapis.com/css2?family=Source+Sans+Pro&display=swap" rel="stylesheet">
+    <script src="./lib/jquery.js"></script>
+    <script src="./lib/jquery-ui.js"></script>
+    <script src="./js/jquery.browser.js"></script>
+    <!-- JavaScript Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta2/dist/js/bootstrap.bundle.min.js" integrity="sha384-b5kHyXgcpbZJO/tY9Ul7kGkf1S0CWuKcCD38l8YkeH8z8QjE0GmW1gYU5S9FOnJ0" crossorigin="anonymous"></script>
+    <script src="./js/rangeslider.js"></script>
+    <script src="./draw2d.js"></script>
+    <script src="./js/OR.js"></script>
+    <script src="./js/AND.js"></script>
+    <script src="./js/SAND.js"></script>
+    <script src="./js/TOPEVENT.js"></script>
+    <script src="./js/ATTACKEVENT.JS"></script>
+    <script src="./js/FAILUREEVENT.js"></script>
+    <script src="./js/DecoratedInputPort.js"></script>
+    <script src="./js/MarkerStateAFigure.js"></script>
+    <script src="./js/MarkerStateBFigure.js"></script>
+    <script src="./js/MarkerFigure.js"></script>
+    <script src="./js/view.js"></script>
+    <script src="./js/SelectionMenuPolicy.js"></script>
+    <script src="./js/propertypane.js"></script>
+    <script src='https://cdn.plot.ly/plotly-latest.min.js'></script>
+    <script type="text/javascript">
+        var textFigure = null;
+        var canvas = null;
+        var label = null;
+        var line = null;
+        var circle = null;
+
+        const MOUSESTATUS = {
+            mode: "SELECT"
+        };
+
+        function stepMap(key) {
+            MOUSESTATUS.mode = key;
         }
-        
-        body {
-            margin: 0;
-            height: 100%;
-            width: 100%;
-            font-family: Avenir Next, Helvetica Neue, Helvetica, Arial, sans-serif !important;
-            overflow: hidden;
-        }
-        
-        .Navbar {
-            margin: 0;
-            padding: 0;
-            position: fixed;
-            top: 0;
-            width: 100%;
-            z-index: 200;
-        }
-        
-        .content-wrapper {
-            width: 100vw;
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
-        }
-        
-        .panes {
-            width: 100%;
-            height: 100vh;
-            display: flex;
-        }
-        
-        #cyto {
-            width: 100%;
-            height: 100%;
-            /* border: 1px solid #aaa; */
-        }
-        
-        .countries {
-            fill: none;
-            stroke: #fff;
-            stroke-linejoin: round;
-        }
-        
-        .legendThreshold {
-            font-size: 12px;
-            font-family: sans-serif;
-        }
-        
-        .caption {
-            fill: #000;
-            text-anchor: start;
-            font-weight: bold;
-        }
-        
-        .bar {
-            fill: #fa0b4e;
-        }
-        
-        #search {
-            background: linear-gradient(180deg, rgba(255, 255, 255, 0) 32.1%, #ffffff 100%), linear-gradient(89.83deg, rgba(255, 66, 0, 0.6) .17%, rgba(229, 6, 149, 0.6) 96.96%);
-        }
-        
-        .button {
-            font-size: 14px;
-            align-items: center;
-            background: #212121;
-            border: 2px solid #212121;
-            border-radius: 4px;
-            color: #ffffff;
-            cursor: pointer;
-            display: inline-flex;
-            font-weight: 700;
-            height: 40px;
-            letter-spacing: 1px;
-            line-height: 40px;
-            justify-content: space-between;
-            padding: 0 16px;
-            position: relative;
-            text-align: left;
-            text-decoration: none;
-            text-transform: uppercase;
-            transition: background .4s, border .4s, color .4s, opacity .4s;
-            vertical-align: middle;
-            white-space: nowrap;
-        }
-        
-        .button:hover {
-            color: black;
-            background: transparent;
-        }
-        
-        .button i,
-        .button svg,
-        .button span {
-            position: relative;
-            z-index: 2;
-        }
-        
-        .button:before {
-            border-radius: 2px;
-            bottom: 0;
-            content: "";
-            display: block;
-            left: 0;
-            opacity: 0;
-            position: absolute;
-            right: 0;
-            top: 0;
-            transition: background .4s, opacity .4s;
-            z-index: 1;
-        }
-        
-        .button:active,
-        .button:focus,
-        .button:hover {
-            background: transparent;
-            color: #212121;
-            outline: none;
-            text-decoration: none
-        }
-        
-        .button--primary {
-            background: transparent;
-            border-color: transparent
-        }
-        
-        .button--primary:before {
-            background: linear-gradient(90deg, #FF4200 .01%, #E50695 99.99%);
-            border-radius: 4px;
-            bottom: -2px;
-            left: -2px;
-            opacity: 1;
-            right: -2px;
-            top: -2px
-        }
-        
-        .button--primary:after {
-            background: linear-gradient(135deg, #ff1800, #ff009b);
-            background-clip: border-box;
-            border-radius: 4px;
-            bottom: -2px;
-            -webkit-clip-path: polygon(2px 100%, 100% 100%, 100% 0, 0 0, 0 100%, 2px 100%, 2px 4px, 2.21px 3.1px, 3.1px 2.21px, 4px 2px, calc(100% - 4px) 2px, calc(100% - 3.1px) 2.21px, calc(100% - 2.21px) 3.1px, calc(100% - 2px) 4px, calc(100% - 2px) calc(100% - 4px), calc(100% - 2.21px) calc(100% - 3.1px), calc(100% - 3.1px) calc(100% - 2.21px), calc(100% - 4px) calc(100% - 2px), 4px calc(100% - 2px), 3.1px calc(100% - 2.21px), 2.21px calc(100% - 3.1px), 2px calc(100% - 4px));
-            clip-path: polygon(2px 100%, 100% 100%, 100% 0, 0 0, 0 100%, 2px 100%, 2px 4px, 2.21px 3.1px, 3.1px 2.21px, 4px 2px, calc(100% - 4px) 2px, calc(100% - 3.1px) 2.21px, calc(100% - 2.21px) 3.1px, calc(100% - 2px) 4px, calc(100% - 2px) calc(100% - 4px), calc(100% - 2.21px) calc(100% - 3.1px), calc(100% - 3.1px) calc(100% - 2.21px), calc(100% - 4px) calc(100% - 2px), 4px calc(100% - 2px), 3.1px calc(100% - 2.21px), 2.21px calc(100% - 3.1px), 2px calc(100% - 4px));
-            content: "";
-            display: block;
-            left: -2px;
-            position: absolute;
-            right: -2px;
-            top: -2px;
-            transition: opacity .4s;
-            z-index: 1
-        }
-        
-        .button--primary:active,
-        .button--primary:focus,
-        .button--primary:hover {
-            background: transparent;
-            color: #212121
-        }
-        
-        #cyto {
-            background: linear-gradient(180deg, #f8dbd7 0, #fff2e1 100%);
-        }
-        
-        .button--primary:active:before,
-        .button--primary:focus:before,
-        .button--primary:hover:before {
-            opacity: 0
-        }
-    </style>
-
-    <script src="https://code.jquery.com/jquery-3.5.1.min.js" integrity="sha256-9/aliU8dGd2tb6OSsuzixeV4y/faTqgFtohetphbbj0=" crossorigin="anonymous"></script>
-    <link href="./bootstrap.min.css" rel="stylesheet" />
-
-    <script src="https://unpkg.com/cytoscape/dist/cytoscape.min.js"></script>
-    <script src="https://unpkg.com/dagre@0.7.4/dist/dagre.js"></script>
-    <script src="cytoscape-dagre.js"></script>
-    <script src="https://unpkg.com/popper.js@1.14.7/dist/umd/popper.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/cytoscape-popper@1.0.5/cytoscape-popper.min.js"></script>
-    <script src="https://unpkg.com/tippy.js@5/dist/tippy-bundle.iife.js"></script>
-    <link rel="stylesheet" href="https://unpkg.com/tippy.js@5/dist/backdrop.css">
-    <script src="./typeahead.js"></script>
-    <script src="./bootstrap.min.js"></script>
-    <script src="https://d3js.org/d3.v4.min.js"></script>
-    <script src="https://d3js.org/d3-scale-chromatic.v1.min.js"></script>
-    <script src="https://d3js.org/d3-geo-projection.v2.min.js"></script>
-    <script src="./helper.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3-legend/2.24.0/d3-legend.js"></script>
-    <script>
-        $(document).ready(function() {
-            var panes = $("#wrapper ").children();
-            var pos = 0;
-            var max = panes.length;
-
-            $("#traitForm").hide();
-            $("#peopleForm").hide();
-            $("#homebutton").hide();
 
 
-
-            function createElement(position, isBase, letter, people, traits) {
-                this.position = position;
-                this.isBase = isBase;
-                this.letter = letter;
-                this.people = people;
-                this.traits = traits;
-            }
-
-            function createPerson(name, height, weight, sex, race, profession, country, baseArray) {
-                this.name = name;
-                this.height = height;
-                this.weight = weight;
-                this.sex = sex;
-                this.race = race;
-                this.profession = profession;
-                this.country = country;
-                this.baseArray = baseArray;
-            }
-
-            function createTrait(name, description, phenotype, base) {
-                this.name = name;
-                this.description = description;
-                this.phenotype = phenotype;
-                this.base = base;
-            }
-
-            var trait1 = new createTrait("Alcohol Flush", "Alocohol Flush syndrome caused due to hydrolase inactivity.", "Red Cheeks", ["1A"]);
-            var trait2 = new createTrait("Alcohol Flush2", "Alocohol Flush syndrome caused due to hydrolase inactivity. 2", "Red Cheeks 2", ["2A"]);
-            var traits = [trait1, trait2];
+        document.addEventListener("DOMContentLoaded", function() {
 
 
+            rangeSlider();
+            let createConnection = function() {
+                let con = new draw2d.Connection();
+                con.setRouter(new draw2d.layout.connection.CircuitConnectionRouter());
+                return con;
+            };
+            canvas = new View("gfx_holder");
+            canvas.installEditPolicy(new draw2d.policy.canvas.FadeoutDecorationPolicy());
+            canvas.installEditPolicy(new draw2d.policy.connection.DragConnectionCreatePolicy({
+                createConnection: createConnection
+            }));
+            canvas.installEditPolicy(new draw2d.policy.canvas.WheelZoomPolicy());
+            canvas.setScrollArea("gfx_holder");
+            canvas.installEditPolicy(new draw2d.policy.canvas.SnapToGridEditPolicy())
+            properties = new PropertyPane("properties", canvas);
 
 
+            // // JUST ADD SOME DOCU ELEMENTS ON THE SCREEN
+            // var msg = new draw2d.shape.note.PostIt({
+            //     text: "Mouse over to the input ports to see InputPort decorations for default values.\nCan be used for circuits or workflow diagrams.\n \n - Decoration is hidden if a connection is present.\n - Change the default value if you click on the label.\n - Stick/Unstick the decoration with a click on the circle.",
+            //     x: 20,
+            //     y: 20
+            // });
+            // canvas.add(msg);
 
-            const races = ["Amercian", "Indian", "European", "Asian", "African", "Latino", "Slavic"];
-            const professions = ["Engineer", "Doctor", "NA", "Blue Collar", "Lawyer", "Civil Servant", "Armed Forces", "Sports", "Artist"]
-            const traitsNames = [];
-            const peopleNames = [];
-            fetch('https://megraph.ap-south-1.aws.cloud.dgraph.io/graphql', {
-                    method: 'post',
-                    headers: {
-                        'Content-Type': 'application/GraphQL; charset=UTF-8',
-                    },
-                    body: "query MyQuery {queryTrait(filter: {}) {   name}}"
-                })
-                .then(response => response.json())
-                .then(commits => {
-                    commits["data"]["queryTrait"].forEach(element => {
-                        // console.log(element["name"]);
-                        traitsNames.push(element["name"]);
-                    });;
-                    // console.log(traitsNames);
-                    $('#the-traits .typeahead').typeahead({
-                        hint: true,
-                        highlight: true,
-                        highlight: true,
-                        minLength: 0
-                    }, {
-                        name: 'traits',
-                        source: substringMatcher(traitsNames)
-                    });
-                });
+            // create a default JSON reader
+            var reader = new draw2d.io.json.Reader();
+            // reader.unmarshal(canvas, lineJson);
 
 
+            displayJSON(canvas);
 
-            fetch('https://megraph.ap-south-1.aws.cloud.dgraph.io/graphql', {
-                    method: 'post',
-                    headers: {
-                        'Content-Type': 'application/GraphQL; charset=UTF-8',
-                    },
-                    body: "query MyQuery {queryperson {    name}}"
-                })
-                .then(response => response.json())
-                .then(commits => {
-                    // console.log(commits);
-                    commits["data"]["queryperson"].forEach(element => {
-                        // console.log(element["name"]);
-                        peopleNames.push(element["name"]);
-                    });;
-                    // console.log(peopleNames);
-                    $('#the-people .typeahead').typeahead({
-                        hint: true,
-                        highlight: true,
-                        highlight: true,
-                        minLength: 0
-                    }, {
-                        name: 'traits',
-                        source: substringMatcher(peopleNames)
-                    });
-                });
-            $("#peopleSearchRedirect").click(function(e) {
-                e.preventDefault();
-                $("#mainForm").hide();
-                $("#traitForm").hide();
-                $("#peopleForm").fadeIn("slow");
-            });
 
-            $("#homebutton").click(function(e) {
-                let element = document.getElementById("search");
-                element.scrollIntoView({
-                    behavior: "smooth",
-                    block: "end",
-                    inline: "nearest"
-                });
-                $("#homebutton").hide();
-            });
-
-            $("#traitSearchRedirect").click(function(e) {
-                e.preventDefault();
-                $("#mainForm").hide();
-                $("#peopleForm").hide();
-                $("#traitForm").fadeIn("slow");
-            });
-
-            $("#peopleBackButton").click(function(e) {
-                e.preventDefault();
-                $("#traitForm").hide();
-                $("#peopleForm").hide();
-                $("#mainForm").fadeIn("slow");
-            });
-
-            $("#traitBackButton").click(function(e) {
-                e.preventDefault();
-                $("#traitForm").hide();
-                $("#peopleForm").hide();
-                $("#mainForm").fadeIn("slow");
-            });
-
-            $("#searchTraits").click(function(e) {
-                e.preventDefault();
-                let tf = $("#traitField").val();
-                let af = $("#allTraitField").is(":checked");
-                let Q = "";
-                if (!af) {
-                    if (tf != "") {
-                        Q = 'query MyQuery {  queryTrait(first: 10,filter:{id:{eq:"' + tf + '"}}) {      name       id        phenotype       description        base(filter: {isBase:false}){         people {        country    }  }      }   }';
-                    }
-                } else {
-                    Q = 'query MyQuery {  queryTrait(first: 10) {      name       id        phenotype       description        base(filter: {isBase:false}){         people {        country    }  }      }   }';
-                }
-                // console.log(Q);
-                getAllTraits(Q);
-            });
-
-            $("#allTraitField").click(function() {
-                if ($("#allTraitField").is(":checked")) {
-                    $("#the-traits").hide();
-                } else {
-                    $("#the-traits").show();
+            canvas.getCommandStack().addEventListener(function(e) {
+                if (e.isPostChangeEvent()) {
+                    displayJSON(canvas);
                 }
             });
 
-            $("#checkField").click(function() {
-                if ($("#checkField").is(":checked")) {
-                    $("#the-people").hide();
-                    $("#the-basics").hide();
-                    $("#the-race").hide();
-                    $("#weightFieldP").hide();
-                    $("#heightFieldP").hide();
-                    $("#the-profession").hide();
-                } else {
-                    $("#the-people").show();
-                    $("#the-basics").show();
-                    $("#the-race").show();
-                    $("#weightFieldP").show();
-                    $("#heightFieldP").show();
-                    $("#the-profession").show();
-                }
-
-            });
-            $("#searchPeople").click(function(e) {
-                e.preventDefault();
-                let nf = $("#nameField").val();
-                let rf = $("#raceField").val();
-                let cf = $("#countryField").val();
-                let pf = $("#professionField").val();
-                let hf = $("#heightField").val();
-                let wf = $("#weightField").val();
-                let CF = $("#checkField").is(":checked");
-                let Q = '';
-                if (CF) {
-                    Q = 'query MyQuery {  queryelement(first: 100,filter: {}, order: {asc: position}) {    isBase    absolutePosition    letter    people{      name    }}}';
-                } else {
-                    let firstpart = "query MyQuery {  queryelement(first: 100,filter: {}, order: {asc: position}) {    isBase    absolutePosition    letter    people(filter: {";
-                    let secondpart = "}){      name    }}}";
-                    let flag = 0;
-                    if (nf != "") {
-                        if (flag > 0) {
-                            firstpart += ",";
-                        }
-                        flag++;
-                        firstpart += "name : {eq: \"" + nf + "\"}";
-
-                    }
-                    if (rf != "") {
-                        if (flag > 0) {
-                            firstpart += ",";
-                        }
-                        flag++;
-                        firstpart += "ethnicity : {eq: \"" + rf + "\"}";
-                    }
-                    if (cf != "") {
-                        if (flag > 0) {
-                            firstpart += ",";
-                        }
-                        flag++;
-                        firstpart += "country : {eq: \"" + cf + "\"}";
-                    }
-                    if (pf != "") {
-                        if (flag > 0) {
-                            firstpart += ",";
-                        }
-                        flag++;
-                        firstpart += "profession : {eq: \"" + pf + "\"}";
-                    }
-                    if (hf != "") {
-                        if (flag > 0) {
-                            firstpart += ",";
-                        }
-                        flag++;
-                        firstpart += "height : {lt:" + hf + "}";
-                    }
-                    if (wf != "") {
-                        if (flag > 0) {
-                            firstpart += ",";
-                        }
-                        flag++;
-                        firstpart += "weight : {lt:" + wf + "}";
-                    }
-                    Q = firstpart + secondpart;
-
-
-                }
-
-                getAllPeople(Q);
-                getAllTraitswithoutRedirect('query MyQuery {  queryTrait(first: 10) {      name       id        phenotype       description        base(filter: {isBase:false}){         people {        country    }  }      }   }');
-            });
-
-            $(document).keydown(function(event) {
-                // console.log(event.key);
-                if (event.key == "r") {
-                    let element = document.getElementById("red");
-                    element.scrollIntoView({
-                        behavior: "smooth",
-                        block: "end",
-                        inline: "nearest"
-                    });
-                }
-                if (event.key == "b") {
-                    let element = document.getElementById("blue");
-                    element.scrollIntoView({
-                        behavior: "smooth",
-                        block: "end",
-                        inline: "nearest"
-                    });
-                }
-                if (event.key == "y") {
-                    let element = document.getElementById("yellow");
-                    element.scrollIntoView({
-                        behavior: "smooth",
-                        block: "end",
-                        inline: "nearest"
-                    });
-                }
-                if (event.key == "ArrowDown") {
-                    pos = (pos + 1) % max;
-                    panes[pos].scrollIntoView({
-                        behavior: "smooth",
-                        block: "end",
-                        inline: "nearest"
-                    });
-
-                }
-                if (event.key == "ArrowUp") {
-                    pos = (pos - 1 + max) % max;
-                    panes[pos].scrollIntoView({
-                        behavior: "smooth",
-                        block: "end",
-                        inline: "nearest"
-                    });
-                }
-
-
-            });
-
-
-
-            var substringMatcher = function(strs) {
-                return function findMatches(q, cb) {
-                    var matches, substringRegex;
-
-                    // an array that will be populated with substring matches
-                    matches = [];
-
-                    // regex used to determine if a string contains the substring `q`
-                    substrRegex = new RegExp(q, 'i');
-
-                    // iterate through the pool of strings and for any string that
-                    // contains the substring `q`, add it to the `matches` array
-                    $.each(strs, function(i, str) {
-                        if (substrRegex.test(str)) {
-                            matches.push(str);
-                        }
-                    });
-
-                    cb(matches);
-                };
+            var trace1 = {
+                x: [23.514916666666664, 26.939275, 30.363633333333336, 33.78799166666667, 37.21235000000001, 40.63670833333334, 44.061066666666676, 47.48542500000001, 50.909783333333344, 54.33414166666668, 57.75850000000002, 61.18285833333335, 64.60721666666669, 68.03157500000002, 71.45593333333336, 74.8802916666667, 78.30465000000002, 81.72900833333337, 85.1533666666667, 88.57772500000003, 92.00208333333336, 95.42644166666669, 98.85080000000004, 102.27515833333337, 105.6995166666667, 109.12387500000004, 112.54823333333337, 115.9725916666667, 119.39695000000005, 122.82130833333338, 126.24566666666671, 129.67002500000004, 133.09438333333338, 136.51874166666673, 139.94310000000004, 143.3674583333334, 146.79181666666673, 150.21617500000005, 153.6405333333334, 157.06489166666674, 160.48925000000006, 163.9136083333334, 167.33796666666674, 170.76232500000006, 174.18668333333338, 177.6110416666667, 181.0354, 184.45975833333333, 187.88411666666664, 191.30847499999996, 194.73283333333328, 198.1571916666666, 201.5815499999999, 205.00590833333322, 208.43026666666654, 211.85462499999986, 215.27898333333317, 218.7033416666665, 222.1276999999998, 225.55205833333312, 228.97641666666644, 232.40077499999975, 235.82513333333307, 239.2494916666664, 242.6738499999997, 246.09820833333302, 249.52256666666634, 252.94692499999965, 256.371283333333, 259.7956416666663, 263.21999999999963, 266.64435833333295, 270.06871666666626, 273.4930749999996, 276.9174333333329, 280.3417916666662, 283.7661499999995, 287.19050833333284, 290.61486666666616, 294.0392249999995, 297.4635833333328, 300.8879416666661, 304.3122999999994, 307.73665833333274, 311.16101666666606, 314.5853749999994, 318.0097333333327, 321.434091666666, 324.8584499999993, 328.28280833333264, 331.70716666666596, 335.1315249999993, 338.5558833333326, 341.9802416666659, 345.4045999999992, 348.8289583333326, 352.25331666666597],
+                y: [0.015706806282722512, 0.015706806282722512, 0.02356020942408377, 0.02356020942408377, 0.028795811518324606, 0.034031413612565446, 0.03926701570680628, 0.04712041884816754, 0.06806282722513089, 0.08115183246073299, 0.09424083769633508, 0.12041884816753927, 0.13350785340314136, 0.14397905759162305, 0.15968586387434555, 0.17801047120418848, 0.19109947643979058, 0.193717277486911, 0.21204188481675393, 0.2198952879581152, 0.22774869109947643, 0.23298429319371727, 0.2513089005235602, 0.2591623036649215, 0.2696335078534031, 0.2931937172774869, 0.3036649214659686, 0.31413612565445026, 0.32722513089005234, 0.33507853403141363, 0.3403141361256545, 0.3481675392670157, 0.3586387434554974, 0.3743455497382199, 0.38219895287958117, 0.387434554973822, 0.39267015706806285, 0.39790575916230364, 0.4005235602094241, 0.40575916230366493, 0.41361256544502617, 0.4162303664921466, 0.4162303664921466, 0.4214659685863874, 0.42408376963350786, 0.42670157068062825, 0.43455497382198954, 0.43455497382198954, 0.4397905759162304, 0.4424083769633508, 0.44502617801047123, 0.4476439790575916, 0.45549738219895286, 0.4581151832460733, 0.4607329842931937, 0.4607329842931937, 0.4607329842931937, 0.46596858638743455, 0.468586387434555, 0.4790575916230366, 0.4816753926701571, 0.4895287958115183, 0.49214659685863876, 0.4973821989528796, 0.5052356020942408, 0.5078534031413613, 0.5078534031413613, 0.5157068062827225, 0.518324607329843, 0.518324607329843, 0.5209424083769634, 0.5235602094240838, 0.5261780104712042, 0.5261780104712042, 0.5314136125654451, 0.5340314136125655, 0.5366492146596858, 0.5366492146596858, 0.5392670157068062, 0.5445026178010471, 0.5471204188481675, 0.5523560209424084, 0.5575916230366492, 0.5602094240837696, 0.56282722513089, 0.5680628272251309, 0.5680628272251309, 0.5759162303664922, 0.5785340314136126, 0.5863874345549738, 0.5890052356020943, 0.5916230366492147, 0.5916230366492147, 0.5968586387434555, 0.6020942408376964, 0.6047120418848168, 0.6047120418848168],
+                type: 'scatter'
             };
 
-            var states = ['Albania', 'Algeria', 'Antigua And Barbuda', 'Argentina', 'Armenia', 'Australia', 'Austria', 'Azerbaijan', 'Bangladesh', 'Belarus', 'Belgium', 'Belize', 'Bermuda', 'Bosnia And Herzegovina', 'Botswana', 'Brazil', 'Bulgaria', 'Burundi', 'Cambodia', 'Cameroon', 'Canada', 'Chile', 'China', 'Colombia', 'Costa Rica', 'Croatia', 'Cuba', 'Czechia', 'Denmark', 'Dominican Republic', 'Ecuador', 'Egypt', 'El Salvador', 'Ethiopia', 'Fiji', 'Finland', 'France', 'Georgia', 'Germany', 'Ghana', 'Greece', 'Guatemala', 'Guyana', 'Haiti', 'Honduras', 'Hong Kong', 'Hungary', 'India', 'Indonesia', 'Iraq', 'Ireland', 'Israel', 'Italy', 'Jamaica', 'Japan', 'Jordan', 'Kazakhstan', 'Kenya', 'Kyrgyzstan', 'Latvia', 'Lebanon', 'Liberia', 'Libya', 'Malawi', 'Malaysia', 'Mexico', 'Mongolia', 'Morocco', 'Mozambique', 'Myanmar', 'Nepal', 'Netherlands', 'New Zealand', 'Nicaragua', 'Nigeria', 'Norway', 'Pakistan', 'Panama', 'Paraguay', 'Peru', 'Philippines', 'Poland', 'Portugal', 'Puerto Rico', 'Romania', 'Russian Federation', 'Rwanda', 'Saudi Arabia', 'Senegal', 'Serbia', 'Sierra Leone', 'Singapore', 'Slovakia', 'Somalia', 'South Africa', 'South Sudan', 'Spain', 'Sri Lanka', 'Sudan', 'Sweden', 'Switzerland', 'Taiwan', 'Thailand', 'Timor-Leste', 'Togo', 'Trinidad And Tobago', 'Tunisia', 'Turkey', 'Uganda', 'Ukraine', 'United Arab Emirates', 'United Kingdom', 'United States', 'Uruguay', 'Viet Nam', 'Zimbabwe'];
+            var data = [trace1];
+            var layout = {
+                title: 'Result',
+                font: {
+                    size: 18
+                }
+            };
 
-            $('#the-basics .typeahead').typeahead({
-                hint: true,
-                highlight: true,
-                highlight: true,
-                minLength: 0
-            }, {
-                name: 'countries',
-                source: substringMatcher(states)
+            var config = {
+                responsive: true
+            }
+
+            Plotly.newPlot('plot', data, layout, config);
+
+            document.addEventListener("keydown", function(e) {
+
+                if (e.key == "q") {
+                    MOUSESTATUS.mode = "OR";
+                }
+                if (e.key == "w") {
+                    MOUSESTATUS.mode = "AND";
+                }
+                if (e.key == "e") {
+                    MOUSESTATUS.mode = "SAN";
+                }
+                if (e.key == "r") {
+                    MOUSESTATUS.mode = "ATK";
+                }
+                if (e.key == "t") {
+                    MOUSESTATUS.mode = "FAI";
+                }
+                if (e.key == "y") {
+                    MOUSESTATUS.mode = "TOP";
+                }
+
             });
 
-            $('#the-race .typeahead').typeahead({
-                hint: true,
-                highlight: true,
-                highlight: true,
-                minLength: 0
-            }, {
-                name: 'races',
-                source: substringMatcher(races)
+
+
+            document.addEventListener("click", function(e) {
+
+                if (MOUSESTATUS.mode === "OR") {
+                    canvas.add(f2 = new OR({
+                        x: Math.round(e.clientX / 10) * 10,
+                        y: Math.round(e.clientY / 10) * 10,
+                        A: Math.floor(Math.random() * 10),
+                        B: Math.floor(Math.random() * 10)
+
+                    }));
+
+                    MOUSESTATUS.mode = "SELECT";
+                }
+
+                if (MOUSESTATUS.mode === "AND") {
+                    canvas.add(f2 = new AND({
+                        x: Math.round(e.clientX / 10) * 10,
+                        y: Math.round(e.clientY / 10) * 10,
+                        A: Math.floor(Math.random() * 10),
+                        B: Math.floor(Math.random() * 10)
+
+                    }));
+
+                    MOUSESTATUS.mode = "SELECT";
+                }
+
+                if (MOUSESTATUS.mode === "SAN") {
+                    canvas.add(f2 = new SAND({
+                        x: Math.round(e.clientX / 10) * 10,
+                        y: Math.round(e.clientY / 10) * 10,
+                        A: Math.floor(Math.random() * 10),
+                        B: Math.floor(Math.random() * 10)
+
+                    }));
+
+                    MOUSESTATUS.mode = "SELECT";
+                }
+
+                if (MOUSESTATUS.mode === "ATK") {
+                    canvas.add(f2 = new ATTACKEVENT({
+                        x: Math.round(e.clientX / 10) * 10,
+                        y: Math.round(e.clientY / 10) * 10,
+                        meanTTA: {
+                            value: 0,
+                            type: 'SLIDER',
+                            name: 'Mean Time to Attack',
+                            min: 0,
+                            max: 365,
+                            step: 1
+                        },
+                        detectionPercent: {
+                            value: 0,
+                            type: 'SLIDER',
+                            name: 'Detection Percent',
+                            min: 0,
+                            max: 100,
+                            step: 10
+                        },
+                        fixedCOA: {
+                            value: 0,
+                            type: 'NUMBER',
+                            name: 'Fixed Cost of Attack',
+                            min: 0,
+                            max: 365,
+                            step: 1
+                        },
+                        fixedDMG: {
+                            value: 0,
+                            type: 'NUMBER',
+                            name: 'Fixed Damage',
+                            min: 0,
+                            max: 10000,
+                            step: 1
+                        },
+                        detection: {
+                            value: 0,
+                            type: 'NUMBER',
+                            name: 'Detection',
+                            min: 0,
+                            max: 1,
+                            step: 1
+                        },
+                        detectTime: {
+                            value: 0,
+                            type: 'NUMBER',
+                            name: 'Detection Time',
+                            min: 0,
+                            max: 365,
+                            step: 1
+                        },
+                        repairCost: {
+                            value: 0,
+                            type: 'NUMBER',
+                            name: 'Repair Cost',
+                            min: 0,
+                            max: 100000,
+                            step: 1
+                        }
+
+                    }));
+                    MOUSESTATUS.mode = "SELECT";
+                }
+                if (MOUSESTATUS.mode === "FAI") {
+                    canvas.add(f2 = new FAILUREEVENT({
+                        x: Math.round(e.clientX / 10) * 10,
+                        y: Math.round(e.clientY / 10) * 10,
+                        noOfPhases: {
+                            value: 0,
+                            type: 'SLIDER',
+                            name: 'No of Phases',
+                            min: 0,
+                            max: 12,
+                            step: 1
+                        },
+                        thresholdPhase: {
+                            value: 0,
+                            type: 'SLIDER',
+                            name: 'Threshhold Phase',
+                            min: 0,
+                            max: 12,
+                            step: 1
+                        },
+                        meanTTF: {
+                            value: 0,
+                            type: 'NUMBER',
+                            name: 'Mean time to Failure',
+                            min: 0,
+                            max: 365,
+                            step: 3
+                        },
+                        repairCost: {
+                            value: 0,
+                            type: 'NUMBER',
+                            name: 'Repair Cost',
+                            min: 0,
+                            max: 10000,
+                            step: 1
+                        }
+
+                    }));
+
+                    MOUSESTATUS.mode = "SELECT";
+                }
+
+                if (MOUSESTATUS.mode === "TOP") {
+                    canvas.add(f2 = new TOPEVENT({
+                        x: Math.round(e.clientX / 10) * 10,
+                        y: Math.round(e.clientY / 10) * 10
+
+                    }));
+
+                    MOUSESTATUS.mode = "SELECT";
+                }
+
             });
-
-            $('#the-profession .typeahead').typeahead({
-                hint: true,
-                highlight: true,
-                minLength: 0
-            }, {
-                name: 'professions',
-                source: substringMatcher(professions)
-            });
-
-
-
-            // getAllPeople();
-
-
-
         });
+
+        function displayJSON(canvas) {
+            var writer = new draw2d.io.json.Writer();
+            writer.marshal(canvas, function(json) {
+                $("#json").text(JSON.stringify(json, null, 2));
+            });
+        }
     </script>
+
 </head>
 
-<body>
-    <div class="Navbar">
-        <nav class="navbar navbar-expand-sm  navbar-light " style="width: 100%;margin: 0;display: block;background: transparent;display: flex;
-        flex-direction: row;
-        justify-content: flex-end;
-        align-items: end;">
-            <ul class="navbar-nav" style="background: transparent;">
-                <a class="button button--primary mb-2" style="margin: 10px;" id="homebutton"><span>Back to Filters</span> </a>
-            </ul>
+<body style="overflow-y: hidden;" id="cursortooltip">
+
+    <div style="width: 100%;height: 100%;">
+        <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+            <div class="container-fluid">
+                <a class="navbar-brand" href="#">Drawing Tool</a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavDarkDropdown" aria-controls="navbarNavDarkDropdown" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+              </button>
+                <div class="collapse navbar-collapse" id="navbarNavDarkDropdown">
+                    <ul class="navbar-nav">
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" id="navbarDarkDropdownMenuLink" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                      Nodes
+                    </a>
+                            <ul class="dropdown-menu dropdown-menu-dark" aria-labelledby="navbarDarkDropdownMenuLink" id="steps">
+                                <li><a class="dropdown-item" href="#" onclick="stepMap('OR');">OR(Q)</a></li>
+                                <li><a class="dropdown-item" href="#" onclick="stepMap('AND');">AND(W)</a></li>
+                                <li><a class="dropdown-item" href="#" onclick="stepMap('SAN');">SAND(E)</a></li>
+                                <li><a class="dropdown-item" href="#" onclick="stepMap('TOP');">Top Event(R)</a></li>
+                                <li><a class="dropdown-item" href="#" onclick="stepMap('ATK');">Attack Event(T)</a></li>
+                                <li><a class="dropdown-item" href="#" onclick="stepMap('FAI');">Failure Event(Y)</a></li>
+                            </ul>
+                        </li>
+                    </ul>
+                </div>
+                <div class="collapse navbar-collapse" id="navbarNavDarkDropdown">
+                    <ul class="navbar-nav">
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" id="navbarDarkDropdownMenuLink" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                      Example Trees
+                    </a>
+                            <ul class="dropdown-menu dropdown-menu-dark" aria-labelledby="navbarDarkDropdownMenuLink" id="steps">
+                                <li><a class="dropdown-item" href="#" onclick="stepMap('OR');">Example 1</a></li>
+                                <li><a class="dropdown-item" href="#" onclick="stepMap('AND');">Example 2</a></li>
+
+                            </ul>
+                        </li>
+                    </ul>
+                </div>
+                <div class="collapse navbar-collapse" id="navbarNavDarkDropdown">
+                    <ul class="navbar-nav">
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" id="navbarDarkDropdownMenuLink" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            View Results
+                    </a>
+                            <ul class="dropdown-menu dropdown-menu-dark" aria-labelledby="navbarDarkDropdownMenuLink" id="steps">
+                                <li><a class="dropdown-item" href="#" onclick="stepMap('OR');">Result 1</a></li>
+                                <li><a class="dropdown-item" href="#" onclick="stepMap('AND');">Result 2</a></li>
+
+                            </ul>
+                        </li>
+                    </ul>
+                </div>
+                <button type="button" class="btn btn-secondary" style="margin-left: 10px;"> Upload Attack Tree </button>
+                <button type="button" class="btn btn-secondary" style="margin-left: 10px;"> Download Attack Tree </button>
+                <button type="button" style="margin-left: 10px;" class="btn btn-secondary" data-bs-toggle="modal" data-bs-target="#runModal"> Run </button>
+                <!-- Modal -->
+                <div class="modal fade" id="runModal" tabindex="-1" aria-labelledby="runModalLabel" aria-hidden="true">
+                    <div class="modal-dialog">
+                        <div class="modal-content" style="width: 800px;height: 650px;">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="runModalLabel">Results</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body" id="plot">
+
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Button trigger modal -->
+                <button type="button" style="margin-left: 10px;" class="btn btn-secondary" data-bs-toggle="modal" data-bs-target="#aboutModal"> About </button>
+
+                <!-- Modal -->
+                <div class="modal fade" id="aboutModal" tabindex="-1" aria-labelledby="aboutModalLabel" aria-hidden="true">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="aboutModalLabel">About</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                ...
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Button trigger modal -->
+                <button type="button" class="btn btn-secondary" data-bs-toggle="modal" data-bs-target="#infoModal" style="margin-left: 10px;"> Documentation </button>
+
+                <!-- Modal -->
+                <div class="modal fade" id="infoModal" tabindex="-1" aria-labelledby="infoModalLabel" aria-hidden="true">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="infoModalLabel">Documentation</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                ...
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </nav>
-    </div>
-    <div>
-        <div class="content-wrapper" id="wrapper">
-            <div class="panes" id="search" style="display: flex;justify-content: center;align-items: center;">
-                <form class="form-inline" id="mainForm">
-                    <a type="mutation" style="margin: 10px;" class="button button--primary mb-2" id="peopleSearchRedirect">
-                        <span>Mutation Analysis</span></a>
-                    <a type="geography" style="margin: 10px;" class="button button--primary mb-2" id="traitSearchRedirect"><span>Geographical Analysis</span></a>
-                </form>
-                <form class="form" id="peopleForm">
-                    <div class="form-group mx-sm-3 mb-2" style="margin: 10px;">
-                        <div class="form-group" id="the-people" id="nameFieldP">
-                            <label for="nameField">Name</label>
-                            <input type="text" class="form-control typeahead" style="background: transparent;border: 2px solid #212121;" id="nameField">
-                        </div>
-                        <div class="form-group" id="the-basics" id="countryFieldP">
-                            <label for="countryField">Country</label>
-                            <input type="text" class="form-control typeahead" style="background: transparent;border: 2px solid #212121;" id="countryField">
-                        </div>
-                        <div class="form-group" id="the-race" id="raceFieldP">
-                            <label for="raceField">Ethnicity</label>
-                            <input type="text" class="form-control typeahead" style="background: transparent;border: 2px solid #212121;" id="raceField">
-                        </div>
-                        <div class="form-group" id="the-profession" id="professionFieldP">
-                            <label for="professionField">Profession</label>
-                            <input type="text" class="form-control typeahead" style="background: transparent;border: 2px solid #212121;" id="professionField">
-                        </div>
-                        <div class="form-group" id="heightFieldP">
-                            <label for="heightField">Max Height</label>
-                            <input type="text" class="form-control" style="background: transparent;border: 2px solid #212121;" id="heightField">
-                        </div>
-                        <div class="form-group" id="weightFieldP">
-                            <label for="weightField">Max Weigth</label>
-                            <input type="text" class="form-control" style="background: transparent;border: 2px solid #212121;" id="weightField">
-                        </div>
-                        <div class="form-group form-check">
-                            <input type="checkbox" class="form-check-input" style="background: transparent;border: 2px solid #212121;" id="checkField">
-                            <label class="form-check-label" for="checkField">Get  everyone</label>
-                        </div>
-                    </div>
-                    <a class="button button--primary mb-2" style="margin: 10px;" id="searchPeople"><span>Search people</span> </a>
-                    <a class="button button--primary mb-2" style="margin: 10px;" id="peopleBackButton"><span>Back to Menu</span></a>
-                </form>
-                <form class="form" id="traitForm">
-                    <div class="form-group mx-sm-3 mb-2" id="traitFieldP">
-                        <div class="form-group" id="the-traits">
-                            <input type="text" class="form-control typeahead" style="background: transparent;border: 2px solid #212121;" id="traitField">
-                            <label for="traitField" class="sr-only">Traits</label>
-                        </div>
+        <div onselectstart="javascript:/*IE8 hack*/return false" id="gfx_holder" style="width:100vw; height:100vh;">
+        </div>
+        <div style="width: 300px;   height: 100%;  right: 0; z-index: 1000;   top: 0; 
+        margin-top: 3.5rem;  position: absolute;  background: white;border-left: 4px solid #2c3e50;" id="propertybar">
 
+        </div>
 
-                        <div class="form-group form-check">
-                            <input type="checkbox" class="form-check-input" style="background: transparent;border: 2px solid #212121;" id="allTraitField">
-                            <label class="form-check-label" for="allTraitField">All traits?</label>
-                        </div>
-                    </div>
-                    <a class="button button--primary mb-2" style="margin-right: 10px;" id="searchTraits"><span>Geographic Analysis</span></a>
-                    <a class="button button--primary mb-2" style="margin-right: 10px;" id="traitBackButton"><span>Back to Menu</span></a>
-                </form>
-
-            </div>
-            <div class="panes" id="blue">
-                <div style="height: 100%;width:100%;" id="cyto">
-
-                </div>
-            </div>
-            <div class="panes" id="red" style="display: flex;  justify-content: end;align-items: center;">
-                <div style="height: 100%;width:70%;" id="chloro">
-                    <svg width="100%" height="100%" id="chloroSVG"></svg>
-                </div>
-                <div style="height: 100%;width:30%;" id="horizontalBarSVG">
-
-                </div>
-
-            </div>
-            <div class="panes" id="yellow">
-                <div style="height: 100%;width:50%; display: flex; flex-direction: column; justify-content: center; align-items: center;" id="traitList">
-
-                </div>
-                <div style="height: 100%;width:50%;    background: linear-gradient(180deg, #f8dbd7 0, #fff2e1 100%);display: flex;  justify-content: center;align-items: center;" id="traitCard">
-                </div>
-            </div>
+        <div style="width: 150px;   height: 100%;  left: 0; z-index: 1000;   top: 0; 
+        margin-top: 3.5rem;  position: absolute;  background: white;border-right: 4px solid #2c3e50;">
+            <div data-shape="ATK" class="palette_node_element draw2d_droppable" title="drag&amp;drop the table into the canvas..">ATTACK EVENT</div>
+            <div data-shape="FAI" class="palette_node_element draw2d_droppable" title="drag&amp;drop the table into the canvas..">FAILURE EVENT</div>
+            <div data-shape="OR" class="palette_node_element draw2d_droppable" title="drag&amp;drop the table into the canvas..">OR GATE</div>
+            <div data-shape="AND" class="palette_node_element draw2d_droppable" title="drag&amp;drop the table into the canvas..">AND GATE</div>
+            <div data-shape="SAND" class="palette_node_element draw2d_droppable" title="drag&amp;drop the table into the canvas..">SAND GATE</div>
+            <div data-shape="TOP" class="palette_node_element draw2d_droppable" title="drag&amp;drop the table into the canvas..">TOP EVENT</div>
+            <!-- <div data-shape="ATTACKEVENT" class="palette_node_element draw2d_droppable" title="drag&amp;drop the table into the canvas..">ATTACK EVENT</div> -->
         </div>
     </div>
 
+    <!-- <pre id="json" style="overflow:auto;position:absolute; bottom:10px; ;left:10px; width:450; height:500;background:white;border:1px solid gray"> -->
+    <!-- </pre> -->
 </body>
 
 </html>
